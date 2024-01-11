@@ -1,41 +1,41 @@
 {
 	"schemaVersion": 1,
-	"id": "modid",
+	"id": "mousewalk",
 	"version": "${version}",
-	"name": "Example mod",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "mousewalk",
+	"description": "A Fabric server-side mod with random things.",
 	"authors": [
-		"Me!"
+		"Madeline Sparkles (madeline@mouse.lgbt)"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://mouse.lgbt",
+		"sources": "https://github.com/msparkles/mousewalk-mod"
 	},
-	"license": "CC0-1.0",
-	"icon": "assets/modid/icon.png",
+	"license": "MIT",
+	"icon": "assets/mousewalk/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.example.ExampleMod"
-		],
-		"client": [
-			"com.example.ExampleModClient"
+			{
+				"value": "lgbt.mouse.Mousewalk",
+				"adapter": "kotlin"
+			}
 		]
 	},
 	"mixins": [
-		"modid.mixins.json",
+		"mousewalk.mixins.json",
 		{
-			"config": "modid.client.mixins.json",
+			"config": "mousewalk.client.mixins.json",
 			"environment": "client"
 		}
 	],
 	"depends": {
-		"fabricloader": ">=0.15.0",
+		"fabricloader": ">=0.15.3",
 		"minecraft": "~1.20.4",
 		"java": ">=17",
-		"fabric-api": "*"
+		"fabric-api": "*",
+		"fabric-language-kotlin": ">=1.9.22"
 	},
 	"suggests": {
-		"another-mod": "*"
 	}
 }

@@ -1,9 +1,9 @@
-# Fabric Example Mod
+# Mousewalk!
 
-## Setup
+## what is this
 
-For setup instructions please see the [fabric wiki page](https://fabricmc.net/wiki/tutorial:setup) that relates to the IDE that you are using.
+i wanted to make a server-side mod again to do funky stuff with minecraft. it will have FeaturesTM.
 
-## License
+## why "mousewalk"
 
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+because catwalk but mouse. not sure why catwalk though
