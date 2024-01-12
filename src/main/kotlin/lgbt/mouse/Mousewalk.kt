@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 const val MOD_ID = "mousewalk"
 
 object Mousewalk : ModInitializer {
-    val LOGGER = LoggerFactory.getLogger(MOD_ID)
+    val LOGGER = LoggerFactory.getLogger(MOD_ID)!!
 
     override fun onInitialize() {
         PolymerResourcePackUtils.addModAssets(MOD_ID)

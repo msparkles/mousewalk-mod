@@ -16,6 +16,8 @@ object DoubleJumpStatusEffect : PolymerStatusEffect, StatusEffect(StatusEffectCa
     val hasJumped = mutableMapOf<ServerPlayerEntity, Int>()
     private const val MAX_JUMP = 1
 
+    override fun getPolymerReplacement(player: ServerPlayerEntity): StatusEffect = StatusEffects.SPEED
+
     fun register() {
         ClientCommandEvent.INPUT_EVENT.register { packet, handler ->
             if (handler.player.hasStatusEffect(this)

@@ -19,5 +19,5 @@ object Estrogen : SimplePolymerItem(
                 .statusEffect(StatusEffectInstance(DoubleJumpStatusEffect, 1200), 100.0F)
                 .build()
         ),
-    Items.LIGHT_BLUE_DYE
+    Items.SWEET_BERRIES
 )
