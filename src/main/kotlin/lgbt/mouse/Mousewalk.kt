@@ -1,7 +1,9 @@
 package lgbt.mouse
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils
+import lgbt.mouse.effects.DoubleJumpStatusEffect
 import lgbt.mouse.items.BuildersWand
+import lgbt.mouse.items.Estrogen
 import net.fabricmc.api.ModInitializer
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
@@ -17,8 +19,15 @@ object Mousewalk : ModInitializer {
         PolymerResourcePackUtils.addModAssets(MOD_ID)
         PolymerResourcePackUtils.markAsRequired()
 
-        Registry.register(Registries.ITEM, Identifier(MOD_ID, "builders_wand"), MousewalkItems.BUILDERS_WAND)
+        Registry.register(Registries.ITEM, Identifier(MOD_ID, "builders_wand"), BuildersWand)
+        Registry.register(Registries.ITEM, Identifier(MOD_ID, "estrogen"), Estrogen)
+        Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier(MOD_ID, "double_jump"),
+            DoubleJumpStatusEffect
+        )
 
+        DoubleJumpStatusEffect.register()
         BuildersWand.register()
     }
 }

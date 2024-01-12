@@ -1,0 +1,20 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        " BB",
+        " SB",
+        "S  "
+    ],
+    "key": {
+        "B": {
+            "item": "minecraft:brick"
+        },
+        "S": {
+            "item": "minecraft:stick"
+        }
+    },
+    "result": {
+        "item": "mousewalk:builders_wand",
+        "count": 1
+    }
+}

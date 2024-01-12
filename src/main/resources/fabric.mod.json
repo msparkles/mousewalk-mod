@@ -1,41 +1,37 @@
 {
-	"schemaVersion": 1,
-	"id": "mousewalk",
-	"version": "${version}",
-	"name": "mousewalk",
-	"description": "A Fabric server-side mod with random things.",
-	"authors": [
-		"Madeline Sparkles (madeline@mouse.lgbt)"
-	],
-	"contact": {
-		"homepage": "https://mouse.lgbt",
-		"sources": "https://github.com/msparkles/mousewalk-mod"
-	},
-	"license": "MIT",
-	"icon": "assets/mousewalk/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			{
-				"value": "lgbt.mouse.Mousewalk",
-				"adapter": "kotlin"
-			}
-		]
-	},
-	"mixins": [
-		"mousewalk.mixins.json",
-		{
-			"config": "mousewalk.client.mixins.json",
-			"environment": "client"
-		}
-	],
-	"depends": {
-		"fabricloader": ">=0.15.3",
-		"minecraft": "~1.20.4",
-		"java": ">=17",
-		"fabric-api": "*",
-		"fabric-language-kotlin": ">=1.9.22"
-	},
-	"suggests": {
-	}
+    "schemaVersion": 1,
+    "id": "mousewalk",
+    "version": "${version}",
+    "name": "mousewalk",
+    "description": "A Fabric server-side mod with random things.",
+    "authors": [
+        "Madeline Sparkles (madeline@mouse.lgbt)"
+    ],
+    "contact": {
+        "homepage": "https://mouse.lgbt",
+        "sources": "https://github.com/msparkles/mousewalk-mod"
+    },
+    "license": "MIT",
+    "icon": "assets/mousewalk/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            {
+                "value": "lgbt.mouse.Mousewalk",
+                "adapter": "kotlin"
+            }
+        ]
+    },
+    "mixins": [
+        "mousewalk.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.15.3",
+        "minecraft": "~1.20.4",
+        "java": ">=17",
+        "fabric-api": "*",
+        "fabric-language-kotlin": ">=1.9.22"
+    },
+    "suggests": {
+    }
 }
