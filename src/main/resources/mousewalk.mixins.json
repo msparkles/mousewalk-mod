@@ -2,7 +2,7 @@
     "required": true,
     "package": "lgbt.mouse.mixin",
     "compatibilityLevel": "JAVA_17",
-    "mixins": ["EntityMixin", "ServerPlayNetworkHandlerMixin"],
+    "mixins": ["EntityMixin", "ServerPlayerInteractionManagerMixin", "ServerPlayNetworkHandlerMixin"],
     "injectors": {
         "defaultRequire": 1
     }
