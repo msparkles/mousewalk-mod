@@ -1,0 +1,17 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "   ",
+        " B ",
+        "   "
+    ],
+    "key": {
+        "B": {
+            "item": "minecraft:milk_bucket"
+        }
+    },
+    "result": {
+        "item": "mousewalk:estrogen",
+        "count": 1
+    }
+}
