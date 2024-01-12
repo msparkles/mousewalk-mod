@@ -3,12 +3,11 @@ package lgbt.mouse.items
 import eu.pb4.polymer.core.api.item.SimplePolymerItem
 import eu.pb4.polymer.virtualentity.api.ElementHolder
 import eu.pb4.polymer.virtualentity.api.attachment.ManualAttachment
-import eu.pb4.polymer.virtualentity.api.elements.EntityElement
+import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement
 import lgbt.mouse.MousewalkItems
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.minecraft.block.BlockState
-import net.minecraft.entity.EntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemUsageContext
@@ -22,6 +21,7 @@ import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Direction.Axis
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
+import org.joml.Vector3f
 
 class BuildersWand : SimplePolymerItem(FabricItemSettings().maxCount(1).rarity(Rarity.RARE).fireproof(), Items.STICK) {
     companion object {
@@ -97,10 +97,12 @@ class BuildersWand : SimplePolymerItem(FabricItemSettings().maxCount(1).rarity(R
         }
 
         private val HIGHLIGHTING_HOLDER = mutableMapOf<PlayerEntity, ElementHolder>()
+        private const val SCALE = 0.999
+        private const val OFFSET = (1.0 - SCALE) / 2.0
 
         fun register() {
             ServerTickEvents.END_SERVER_TICK.register { server ->
-                if (server.ticks % 5 == 0) {
+                if (server.ticks % 8 == 0) {
                     HIGHLIGHTING_HOLDER.values.forEach { it.destroy() }
                     HIGHLIGHTING_HOLDER.clear()
 
@@ -124,10 +126,11 @@ class BuildersWand : SimplePolymerItem(FabricItemSettings().maxCount(1).rarity(R
                                         this.startWatching(player)
 
                                         highlights.forEach {
-                                            val e = EntityElement(EntityType.SHULKER, player.serverWorld)
-                                            e.entity().isInvisible = true
-                                            e.entity().isGlowing = true
+                                            val e = BlockDisplayElement(block)
+                                            e.isGlowing = true
+                                            e.scale = Vector3f(SCALE.toFloat(), SCALE.toFloat(), SCALE.toFloat())
                                             e.offset = Vec3d.of(it.subtract(blockHit.blockPos))
+                                                .add(Vec3d(OFFSET, OFFSET, OFFSET))
                                             this.addElement(e)
                                         }
                                     }
