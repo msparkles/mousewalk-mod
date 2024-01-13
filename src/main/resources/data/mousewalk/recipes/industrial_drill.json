@@ -1,0 +1,29 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "TRP",
+        " FR",
+        "S T"
+    ],
+    "key": {
+        "P": {
+            "item": "minecraft:diamond_pickaxe"
+        },
+        "F": {
+            "item": "minecraft:furnace"
+        },
+        "R": {
+            "item": "minecraft:redstone_ore"
+        },
+        "T": {
+            "item": "minecraft:tnt"
+        },
+        "S": {
+            "item": "minecraft:lightning_rod"
+        }
+    },
+    "result": {
+        "item": "mousewalk:industrial_drill",
+        "count": 1
+    }
+}
