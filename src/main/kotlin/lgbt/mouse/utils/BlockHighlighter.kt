@@ -20,7 +20,8 @@ object BlockHighlighter {
     private const val SCALE = 0.999
     private const val OFFSET = (1.0 - SCALE) / 2.0
 
-    val REGISTERED_HIGHLIGHTER = mutableMapOf<Item, (BlockPos, BlockState, World, Direction) -> List<BlockPos>>()
+    val REGISTERED_HIGHLIGHTER =
+        mutableMapOf<Item, Pair<Int, (PlayerEntity, BlockPos, BlockState, World, Direction) -> List<BlockPos>>>()
 
     fun register() {
         ServerTickEvents.END_SERVER_TICK.register { server ->
@@ -36,7 +37,8 @@ object BlockHighlighter {
                             }?.let {
                                 player to it
                             }
-                    }?.let { (player, highlighter) ->
+                    }?.let { (player, v) ->
+                        val (color, highlighter) = v
                         val cast =
                             player.raycast(PlayerEntity.getReachDistance(player.isCreative).toDouble(), 0F, false)
 
@@ -44,6 +46,7 @@ object BlockHighlighter {
                             val block = player.world.getBlockState(blockHit.blockPos)
                             if (!block.isAir) {
                                 val highlights = highlighter(
+                                    player,
                                     blockHit.blockPos,
                                     block,
                                     player.world,
@@ -57,6 +60,7 @@ object BlockHighlighter {
                                     highlights.forEach {
                                         val e = BlockDisplayElement(player.world.getBlockState(it))
                                         e.isGlowing = true
+                                        e.glowColorOverride = color
                                         e.scale = Vector3f(SCALE.toFloat(), SCALE.toFloat(), SCALE.toFloat())
                                         e.offset = Vec3d.of(it.subtract(blockHit.blockPos))
                                             .add(Vec3d(OFFSET, OFFSET, OFFSET))

@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayerInteractionManager.class)
 public abstract class ServerPlayerInteractionManagerMixin {
@@ -28,10 +29,18 @@ public abstract class ServerPlayerInteractionManagerMixin {
         if (this.player.getMainHandStack().getItem() == IndustrialDrill.INSTANCE) {
             HitResult cast = player.raycast(PlayerEntity.getReachDistance(player.isCreative()), 0F, false);
             if (cast instanceof BlockHitResult result) {
-                for (BlockPos n : IndustrialDrill.INSTANCE.findBlocks(pos, result.getSide())) {
+                for (BlockPos n : IndustrialDrill.INSTANCE.findBlocks(player, pos, player.getServerWorld(), result.getSide())) {
                     this.tryBreakBlock(n);
                 }
             }
+        }
+    }
+
+    @Inject(method = "tryBreakBlock", at = @At("HEAD"), cancellable = true)
+    public void $mousewalk_tryBreakBlock(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+        if (this.player.getMainHandStack().getItem() == IndustrialDrill.INSTANCE
+                && IndustrialDrill.INSTANCE.calculateRemainingFuel(this.player.getMainHandStack()) <= 0) {
+            cir.setReturnValue(false);
         }
     }
 }

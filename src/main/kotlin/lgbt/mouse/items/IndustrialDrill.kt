@@ -13,10 +13,12 @@ import net.minecraft.inventory.StackReference
 import net.minecraft.item.*
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
+import net.minecraft.registry.tag.BlockTags
 import net.minecraft.screen.slot.Slot
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.ClickType
+import net.minecraft.util.Colors
 import net.minecraft.util.Formatting
 import net.minecraft.util.Rarity
 import net.minecraft.util.math.BlockPos
@@ -24,29 +26,32 @@ import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
 object IndustrialDrill :
-    PickaxeItem(
-        ToolMaterials.DIAMOND,
-        1,
+    MiningToolItem(
+        1.0f,
         -2.8f,
+        ToolMaterials.DIAMOND,
+        BlockTags.PICKAXE_MINEABLE,
         FabricItemSettings()
             .maxCount(1)
             .rarity(Rarity.RARE)
             .fireproof()
     ),
     PolymerItem {
-    fun findBlocks(blockPos: BlockPos, side: Direction): List<BlockPos> {
+    fun findBlocks(player: PlayerEntity, blockPos: BlockPos, world: World, side: Direction): List<BlockPos> {
+        if (player.isSneaking) return emptyList()
+
         val dirs = when (side.axis!!) {
             Direction.Axis.X -> Cardinal.X_CARDINALS_AND_CORNERS
             Direction.Axis.Y -> Cardinal.Y_CARDINALS_AND_CORNERS
             Direction.Axis.Z -> Cardinal.Z_CARDINALS_AND_CORNERS
         }
 
-        return dirs.map { blockPos.add(it) }
+        return dirs.map { blockPos.add(it) }.filter { world.testBlockState(it) { state -> !state.isAir } }
     }
 
     fun register() {
-        BlockHighlighter.REGISTERED_HIGHLIGHTER[this] = { blockPos, _, _, side ->
-            this.findBlocks(blockPos, side) + blockPos
+        BlockHighlighter.REGISTERED_HIGHLIGHTER[this] = Colors.BLACK to { player, blockPos, _, world, side ->
+            this.findBlocks(player, blockPos, world, side) + blockPos
         }
     }
 
@@ -184,7 +189,7 @@ object IndustrialDrill :
 
     override fun isItemBarVisible(stack: ItemStack) = true
 
-    private fun calculateRemainingFuel(stack: ItemStack): Int {
+    fun calculateRemainingFuel(stack: ItemStack): Int {
         val fuelBuffer = this.getFuelBuffer(stack)
 
         val fuel = this.getFuel(stack) ?: return fuelBuffer
@@ -216,6 +221,12 @@ object IndustrialDrill :
     }
 
     override fun getMiningSpeedMultiplier(stack: ItemStack, state: BlockState): Float {
-        return if (this.calculateRemainingFuel(stack) > 0) super.getMiningSpeedMultiplier(stack, state) else 0.0f
+        return if (this.calculateRemainingFuel(stack) > 0) {
+            if (state.isIn(BlockTags.PICKAXE_MINEABLE) || state.isIn(BlockTags.SHOVEL_MINEABLE)) {
+                return this.miningSpeed
+            } else {
+                return 1.0f
+            }
+        } else 0.0f
     }
 }

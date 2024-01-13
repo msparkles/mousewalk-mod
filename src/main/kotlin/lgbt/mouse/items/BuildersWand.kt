@@ -12,6 +12,7 @@ import net.minecraft.item.ItemUsageContext
 import net.minecraft.item.Items
 import net.minecraft.sound.SoundCategory
 import net.minecraft.util.ActionResult
+import net.minecraft.util.Colors
 import net.minecraft.util.Rarity
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
@@ -65,7 +66,7 @@ object BuildersWand : SimplePolymerItem(FabricItemSettings().maxCount(1).rarity(
     }
 
     fun register() {
-        BlockHighlighter.REGISTERED_HIGHLIGHTER[this] = { blockPos, blockState, world, side ->
+        BlockHighlighter.REGISTERED_HIGHLIGHTER[this] = Colors.WHITE to { _, blockPos, blockState, world, side ->
             this.findBlocks(listOf(blockPos), blockState, world, side)
         }
     }
