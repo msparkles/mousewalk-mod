@@ -44,6 +44,9 @@ dependencies {
     modImplementation include("eu.pb4:polymer-resource-pack:${project.polymer_version}")
     modImplementation include("eu.pb4:polymer-virtual-entity:${project.polymer_version}")
     modImplementation include("eu.pb4:polymer-networking:${project.polymer_version}")
+    modApi include("teamreborn:energy:${project.techreborn_energy_version}") {
+        transitive = false
+    }
 }
 
 processResources {
