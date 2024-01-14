@@ -12,9 +12,8 @@ import net.fabricmc.fabric.api.`object`.builder.v1.block.FabricBlockSettings
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
-import net.minecraft.entity.LivingEntity
-import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.BlockSoundGroup
 import net.minecraft.util.Identifier
@@ -70,19 +69,33 @@ object CopperCable :
         holder.tick()
     }
 
-    override fun onPlaced(
-        world: World,
-        pos: BlockPos,
+    override fun onBlockAdded(
         state: BlockState?,
-        placer: LivingEntity?,
-        itemStack: ItemStack?,
+        world: World?,
+        pos: BlockPos,
+        oldState: BlockState?,
+        notify: Boolean,
     ) {
         (world as? ServerWorld)?.let {
             newHolder(pos, it)
         }
 
-        super.onPlaced(world, pos, state, placer, itemStack)
+        super.onBlockAdded(state, world, pos, oldState, notify)
     }
+
+
+    override fun onStateReplaced(
+        state: BlockState?,
+        world: World?,
+        pos: BlockPos,
+        newState: BlockState?,
+        moved: Boolean,
+    ) {
+        remove(pos)
+
+        super.onStateReplaced(state, world, pos, newState, moved)
+    }
+
 
     override fun neighborUpdate(
         state: BlockState?,
@@ -99,15 +112,9 @@ object CopperCable :
         super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify)
     }
 
-    override fun onStateReplaced(
-        state: BlockState?,
-        world: World?,
-        pos: BlockPos,
-        newState: BlockState?,
-        moved: Boolean,
-    ) {
-        remove(pos)
+    override fun onPolymerBlockSend(blockState: BlockState?, pos: BlockPos.Mutable, player: ServerPlayerEntity) {
+        newHolder(pos.toImmutable(), player.serverWorld)
 
-        super.onStateReplaced(state, world, pos, newState, moved)
+        super.onPolymerBlockSend(blockState, pos, player)
     }
 }
