@@ -3,6 +3,7 @@ package lgbt.mouse
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils
 import lgbt.mouse.effects.DoubleJumpStatusEffect
 import lgbt.mouse.items.BuildersWand
+import lgbt.mouse.items.Dolly
 import lgbt.mouse.items.Estrogen
 import lgbt.mouse.items.IndustrialDrill
 import lgbt.mouse.utils.BlockHighlighter
@@ -26,6 +27,7 @@ object Mousewalk : ModInitializer {
         Registry.register(Registries.ITEM, Identifier(MOD_ID, "builders_wand"), BuildersWand)
         Registry.register(Registries.ITEM, Identifier(MOD_ID, "estrogen"), Estrogen)
         Registry.register(Registries.ITEM, Identifier(MOD_ID, "industrial_drill"), IndustrialDrill)
+        Registry.register(Registries.ITEM, Identifier(MOD_ID, "dolly"), Dolly)
         Registry.register(
             Registries.STATUS_EFFECT,
             Identifier(MOD_ID, "double_jump"),
