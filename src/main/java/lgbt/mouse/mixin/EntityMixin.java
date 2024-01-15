@@ -12,14 +12,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Entity.class)
 public class EntityMixin {
     @Inject(method = "setOnGround(Z)V", at = @At("TAIL"))
-    public void $mousewalk_setOnGround(boolean onGround, CallbackInfo ci) {
+    public void mousewalk$setOnGround(boolean onGround, CallbackInfo ci) {
         if (onGround && ((Entity) (Object) this) instanceof ServerPlayerEntity playerEntity) {
             DoubleJumpStatusEffect.INSTANCE.getHasJumped().remove(playerEntity);
         }
     }
 
     @Inject(method = "setOnGround(ZLnet/minecraft/util/math/Vec3d;)V", at = @At("TAIL"))
-    public void $mousewalk_setOnGround(boolean onGround, Vec3d movement, CallbackInfo ci) {
+    public void mousewalk$setOnGround(boolean onGround, Vec3d movement, CallbackInfo ci) {
         if (onGround && ((Entity) (Object) this) instanceof ServerPlayerEntity playerEntity) {
             DoubleJumpStatusEffect.INSTANCE.getHasJumped().remove(playerEntity);
         }

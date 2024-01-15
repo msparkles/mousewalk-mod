@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerPlayNetworkHandler.class)
 public class ServerPlayNetworkHandlerMixin {
     @Inject(method = "onClientCommand", at = @At("TAIL"))
-    public void $mousewalk_onPlayerMove(ClientCommandC2SPacket packet, CallbackInfo ci) {
+    public void mousewalk$onPlayerMove(ClientCommandC2SPacket packet, CallbackInfo ci) {
         ClientCommandEvent.Companion.getINPUT_EVENT().invoker().onClientCommand(packet, (ServerPlayNetworkHandler) (Object) this);
     }
 }

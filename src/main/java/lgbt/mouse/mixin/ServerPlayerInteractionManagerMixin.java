@@ -30,10 +30,10 @@ public abstract class ServerPlayerInteractionManagerMixin {
     protected ServerWorld world;
 
     @Inject(method = "finishMining", at = @At("HEAD"))
-    public void $mousewalk_finishMining(BlockPos pos, int sequence, String reason, CallbackInfo ci) {
+    public void mousewalk$finishMining(BlockPos pos, int sequence, String reason, CallbackInfo ci) {
         if (player.getMainHandStack().getItem() == IndustrialDrill.INSTANCE) {
             HitResult cast = player.raycast(PlayerEntity.getReachDistance(player.isCreative()), 0F, false);
-            
+
             if (cast instanceof BlockHitResult result) {
                 for (BlockPos n : IndustrialDrill.INSTANCE.findBlocks(player, pos, world, result.getSide())) {
                     BlockState state = world.getBlockState(n);
