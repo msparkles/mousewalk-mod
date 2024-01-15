@@ -55,7 +55,6 @@ object BlockHighlighter {
                                 HIGHLIGHTING_HOLDER[player] = ElementHolder().apply {
                                     this.attachment =
                                         ManualAttachment(this, player.serverWorld) { Vec3d.of(blockHit.blockPos) }
-                                    this.startWatching(player)
 
                                     highlights.forEach {
                                         val e = BlockDisplayElement(player.world.getBlockState(it))
@@ -64,8 +63,10 @@ object BlockHighlighter {
                                         e.scale = Vector3f(SCALE.toFloat(), SCALE.toFloat(), SCALE.toFloat())
                                         e.offset = Vec3d.of(it.subtract(blockHit.blockPos))
                                             .add(Vec3d(OFFSET, OFFSET, OFFSET))
-                                        this.addElement(e)
+                                        this.addElementWithoutUpdates(e)
                                     }
+
+                                    this.startWatching(player)
                                 }
                             }
                         }
