@@ -1,16 +1,16 @@
-package lgbt.mouse.blocks
+package lgbt.mouse.blocks.transfer
 
 import eu.pb4.polymer.core.api.block.SimplePolymerBlock
 import eu.pb4.polymer.virtualentity.api.ElementHolder
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement
 import lgbt.mouse.MOD_ID
-import lgbt.mouse.utils.Cardinal
+import lgbt.mouse.blocks.flag.CableConnectable
 import lgbt.mouse.utils.OpaqueBlockBoundAttachment
 import net.fabricmc.fabric.api.`object`.builder.v1.block.FabricBlockSettings
-import net.minecraft.block.Block
-import net.minecraft.block.BlockState
-import net.minecraft.block.Blocks
-import net.minecraft.block.ShapeContext
+import net.minecraft.block.*
+import net.minecraft.block.entity.BlockEntity
+import net.minecraft.block.entity.BlockEntityTicker
+import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.DyeItem
 import net.minecraft.item.Items
@@ -22,6 +22,7 @@ import net.minecraft.util.Hand
 import net.minecraft.util.Identifier
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
@@ -45,7 +46,21 @@ abstract class Cable<T : Cable<T>>(
         base
     },
     null
-) {
+), BlockEntityProvider {
+    override fun <T : BlockEntity?> getTicker(
+        world: World?,
+        state: BlockState?,
+        type: BlockEntityType<T>?,
+    ): BlockEntityTicker<T> {
+        return BlockEntityTicker { world1, pos, state1, be ->
+            (be as? CableEntity)?.tick(
+                world1,
+                pos,
+                state1
+            )
+        }
+    }
+
     companion object {
         private const val SCALE_SCALAR = 0.3333333333333333
         private const val OFFSET_SCALAR = 0.5 - SCALE_SCALAR / 2.0
@@ -107,13 +122,22 @@ abstract class Cable<T : Cable<T>>(
         ELEMENT_HOLDERS.remove(pos)
     }
 
-    fun getConnected(pos: BlockPos, state: BlockState, world: BlockView) = Cardinal.CARDINALS.mapNotNull {
-        val otherState = world.getBlockState(pos.add(it))
-        
-        if (
-            state.block == otherState.block
-            || (this.isSameBlock(otherState.block) && (state.block == this.colorless.value || otherState.block == this.colorless.value))
-        ) {
+    fun canConnectCable(otherBlock: Block): Boolean {
+        if (this == otherBlock) {
+            return true
+        }
+
+        if (this.isSameBlock(otherBlock)) {
+            return (this == this.colorless.value || otherBlock == this.colorless.value)
+        }
+
+        return otherBlock is CableConnectable
+    }
+
+    private fun getConnected(pos: BlockPos, world: World) = Direction.entries.mapNotNull {
+        val otherState = world.getBlockState(pos.add(it.vector))
+
+        if (canConnectCable(otherState.block)) {
             it
         } else {
             null
@@ -121,9 +145,9 @@ abstract class Cable<T : Cable<T>>(
     }
 
 
-    private fun getOffsets(pos: BlockPos, state: BlockState, world: BlockView) =
-        listOf(Vec3d.ZERO) + getConnected(pos, state, world).map {
-            Vec3d.of(it).multiply(SCALE)
+    private fun getOffsets(pos: BlockPos, world: World) =
+        listOf(Vec3d.ZERO) + getConnected(pos, world).map {
+            Vec3d.of(it.vector).multiply(SCALE)
         }
 
     private fun newHolder(pos: BlockPos, state: BlockState, world: ServerWorld) {
@@ -131,7 +155,7 @@ abstract class Cable<T : Cable<T>>(
 
         val holder = ElementHolder()
 
-        getOffsets(pos, state, world).forEach { o ->
+        getOffsets(pos, world).forEach { o ->
             val e = BlockDisplayElement(Blocks.COPPER_BLOCK.defaultState)
             e.scale = SCALE.toVector3f()
             e.offset = o.add(OFFSET)
@@ -217,5 +241,4 @@ abstract class Cable<T : Cable<T>>(
 
         super.onPolymerBlockSend(blockState, pos, player)
     }
-
 }

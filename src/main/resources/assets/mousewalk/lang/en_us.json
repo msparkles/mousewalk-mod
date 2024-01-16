@@ -8,6 +8,24 @@
     "item.mousewalk.dolly": "Dolly® Item Mover™ Pro+ S",
     "item.mousewalk.dolly.usage1": "(Shift) Right click to store a BlockEntity(chests, spawners...) in the Dolly",
     "item.mousewalk.dolly.usage2": "Right click again to place it back down.",
-    "block.mousewalk.copper_cable": "Copper Cable"
+    "block.mousewalk.copper_cable": "Copper Cable",
+    "block.mousewalk.white_copper_cable": "White Copper Cable",
+    "block.mousewalk.orange_copper_cable": "Orange Copper Cable",
+    "block.mousewalk.magenta_copper_cable": "Magenta Copper Cable",
+    "block.mousewalk.light_blue_copper_cable": "Light Blue Copper Cable",
+    "block.mousewalk.yellow_copper_cable": "Yellow Copper Cable",
+    "block.mousewalk.lime_copper_cable": "Lime Copper Cable",
+    "block.mousewalk.pink_copper_cable": "Pink Copper Cable",
+    "block.mousewalk.gray_copper_cable": "Gray Copper Cable",
+    "block.mousewalk.light_gray_copper_cable": "Light Gray Copper Cable",
+    "block.mousewalk.cyan_copper_cable": "Cyan Copper Cable",
+    "block.mousewalk.purple_copper_cable": "Purple Copper Cable",
+    "block.mousewalk.blue_copper_cable": "Blue Copper Cable",
+    "block.mousewalk.brown_copper_cable": "Brown Copper Cable",
+    "block.mousewalk.green_copper_cable": "Green Copper Cable",
+    "block.mousewalk.red_copper_cable": "Red Copper Cable",
+    "block.mousewalk.black_copper_cable": "Black Copper Cable",
+    "block.mousewalk.fuel_generator": "Fuel Generator",
+    "block.mousewalk.electric_furnace": "Electric Furnace"
 }
 
