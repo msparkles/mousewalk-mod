@@ -139,7 +139,7 @@ object Mousewalk : ModInitializer {
             ELECTRIC_FURNACE_ENTITY_TYPE
         )
         ItemStorage.SIDED.registerForBlockEntity(
-            { entity: ElectricFurnace.ElectricFurnaceEntity, _: Direction? -> entity.inputStorage },
+            { entity: ElectricFurnace.ElectricFurnaceEntity, _: Direction? -> entity.storage },
             ELECTRIC_FURNACE_ENTITY_TYPE,
         )
 

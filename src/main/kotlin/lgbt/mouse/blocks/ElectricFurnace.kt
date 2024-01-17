@@ -2,13 +2,16 @@ package lgbt.mouse.blocks
 
 import eu.pb4.polymer.core.api.block.SimplePolymerBlock
 import eu.pb4.polymer.core.api.item.PolymerBlockItem
-import eu.pb4.sgui.api.gui.SimpleGuiBuilder
-import eu.pb4.sgui.virtual.SguiScreenHandlerFactory
+import eu.pb4.sgui.api.ScreenProperty
+import eu.pb4.sgui.api.elements.GuiElementBuilder
+import eu.pb4.sgui.api.gui.SimpleGui
 import lgbt.mouse.Mousewalk
 import lgbt.mouse.blocks.flag.CableConnectable
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.fabricmc.fabric.api.`object`.builder.v1.block.FabricBlockSettings
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage
+import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage
 import net.minecraft.block.BlockEntityProvider
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
@@ -21,8 +24,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.recipe.RecipeType
-import net.minecraft.screen.FurnaceScreenHandler
-import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.slot.Slot
 import net.minecraft.server.network.ServerPlayerEntity
@@ -68,51 +69,53 @@ object ElectricFurnace : SimplePolymerBlock(
             private const val COOK_TIME_TOTAL_KEY = "CookTimeTotal"
             private const val INPUT_SLOT_KEY = "input_slot"
             private const val OUTPUT_SLOT_KEY = "output_slot"
-            private const val TICKS_NEEDED: Short = 80
-        }
 
-        private var cookTime: Short = 0
+            const val TICKS_NEEDED: Short = 80
 
-        val propertyDelegate = object : PropertyDelegate {
-            override fun get(index: Int): Int {
-                return when (index) {
-                    2 -> cookTime.toInt()
-                    3 -> TICKS_NEEDED.toInt()
-                    else -> 0
+            class FurnaceGui(state: BlockState, val entity: ElectricFurnaceEntity, player: ServerPlayerEntity) :
+                SimpleGui(ScreenHandlerType.FURNACE, player, false) {
+                override fun onTick() {
+                    this.sendProperty(ScreenProperty.MAX_PROGRESS, TICKS_NEEDED.toInt())
+                    this.sendProperty(ScreenProperty.CURRENT_PROGRESS, entity.cookTime.toInt())
+                }
+
+                init {
+                    this.title = Text.translatable(state.block.getTranslationKey())
+                    this.addSlotRedirect(entity.inputSlot)
+                    this.addSlot(GuiElementBuilder().setItem(Items.BARRIER).setName(Text.empty()))
+                    this.addSlotRedirect(entity.outputSlot)
                 }
             }
-
-            override fun set(index: Int, value: Int) {
-            }
-
-            override fun size(): Int {
-                return 4
-            }
-        };
-
-        val inventory = SimpleInventory(3)
-
-        private var inputSlot: Slot = Slot(inventory, 0, 0, 0)
-        private var outputSlot: Slot = Slot(inventory, 2, 0, 0)
-
-        val builder: SimpleGuiBuilder = run {
-            val builder = SimpleGuiBuilder(ScreenHandlerType.FURNACE, false)
-
-            builder.title = Text.translatable(state.block.getTranslationKey())
-            builder.setSlotRedirect(0, this.inputSlot)
-            builder.setSlotRedirect(2, this.outputSlot)
-
-            builder
         }
 
-        val inputStorage = object : SingleStackStorage() {
-            override fun getStack() = inputSlot.stack
+        var cookTime: Short = 0
+            private set
 
-            override fun setStack(stack: ItemStack?) {
-                inputSlot.stack = stack
+        private var inputSlot = Slot(SimpleInventory(1), 0, 0, 0)
+        private var outputSlot = Slot(SimpleInventory(1), 0, 0, 0)
+
+        val storage = CombinedStorage(listOf(
+            object : SingleStackStorage() {
+                override fun getStack() = inputSlot.stack
+
+                override fun setStack(stack: ItemStack?) {
+                    inputSlot.stack = stack ?: ItemStack.EMPTY
+                }
+
+                override fun canExtract(itemVariant: ItemVariant?) = false
+                override fun supportsExtraction() = false
+            },
+            object : SingleStackStorage() {
+                override fun getStack() = outputSlot.stack
+
+                override fun setStack(stack: ItemStack?) {
+                    outputSlot.stack = stack ?: ItemStack.EMPTY
+                }
+
+                override fun canInsert(itemVariant: ItemVariant?) = false
+                override fun supportsInsertion() = false
             }
-        }
-
+        ))
 
         override val energyStorage = object : SimpleEnergyStorage(4000, 100, 0) {
             override fun onFinalCommit() {
@@ -151,10 +154,10 @@ object ElectricFurnace : SimplePolymerBlock(
             if (cookTime >= TICKS_NEEDED) {
                 if (!inputSlot.stack.isEmpty) {
                     val recipe =
-                        world.recipeManager.getFirstMatch(RecipeType.SMELTING, inventory, world).getOrNull()
+                        world.recipeManager.getFirstMatch(RecipeType.SMELTING, inputSlot.inventory, world).getOrNull()
                             ?: return
 
-                    val result = recipe.value.craft(inventory, world.registryManager)
+                    val result = recipe.value.craft(inputSlot.inventory, world.registryManager)
 
                     if (outputSlot.stack.isEmpty) {
                         outputSlot.stack = result
@@ -187,12 +190,11 @@ object ElectricFurnace : SimplePolymerBlock(
         hand: Hand?,
         hit: BlockHitResult?,
     ): ActionResult {
-        (player as? ServerPlayerEntity)?.let { serverPlayer ->
-            (world.getBlockEntity(pos) as? ElectricFurnaceEntity)?.let {
-                serverPlayer.openHandledScreen(SguiScreenHandlerFactory(it.builder.build(player)) { syncId, playerInventory, _ ->
-                    FurnaceScreenHandler(syncId, playerInventory, it.inventory, it.propertyDelegate)
-                })
-            }
+        (player as? ServerPlayerEntity)?.let {
+            val entity = (world.getBlockEntity(pos) as? ElectricFurnaceEntity) ?: return ActionResult.FAIL
+            val gui = ElectricFurnaceEntity.Companion.FurnaceGui(state, entity, player)
+
+            gui.open()
         }
         return ActionResult.SUCCESS
     }
