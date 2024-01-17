@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.`object`.builder.v1.block.FabricBlockSettings
 import net.fabricmc.fabric.api.registry.FuelRegistry
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
 import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage
+import net.minecraft.block.Block
 import net.minecraft.block.BlockEntityProvider
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
@@ -16,13 +17,17 @@ import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.inventory.SimpleInventory
+import net.minecraft.item.ItemPlacementContext
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.screen.slot.Slot
 import net.minecraft.sound.BlockSoundGroup
+import net.minecraft.state.StateManager
+import net.minecraft.state.property.Properties
 import net.minecraft.util.ItemScatterer
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 import team.reborn.energy.api.base.SimpleEnergyStorage
 
@@ -30,6 +35,10 @@ object FuelGenerator : SimplePolymerBlock(
     FabricBlockSettings.create().sounds(BlockSoundGroup.COPPER).strength(0.5f),
     Blocks.FURNACE
 ), BlockEntityProvider, CableConnectable {
+    init {
+        this.defaultState = defaultState.with(Properties.HORIZONTAL_FACING, Direction.NORTH);
+    }
+
     const val FUEL_GENERATOR_NAME = "fuel_generator"
 
     override fun <T : BlockEntity?> getTicker(
@@ -113,6 +122,23 @@ object FuelGenerator : SimplePolymerBlock(
     }
 
     val ITEM = object : PolymerBlockItem(FuelGenerator, FabricItemSettings(), Items.FURNACE) {
+    }
+
+
+    override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
+        builder.add(Properties.HORIZONTAL_FACING)
+    }
+
+    override fun getPlacementState(ctx: ItemPlacementContext): BlockState {
+        return super.getPlacementState(ctx)!!
+            .with(Properties.HORIZONTAL_FACING, ctx.horizontalPlayerFacing.opposite)
+    }
+
+    override fun getPolymerBlockState(state: BlockState): BlockState {
+        return this.getPolymerBlock(state).defaultState.with(
+            Properties.HORIZONTAL_FACING,
+            state[Properties.HORIZONTAL_FACING]
+        )
     }
 
     override fun onStateReplaced(
