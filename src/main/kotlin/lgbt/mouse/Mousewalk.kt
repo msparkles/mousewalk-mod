@@ -19,7 +19,6 @@ import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage
-import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.text.Text
@@ -98,7 +97,7 @@ object Mousewalk : ModInitializer {
             Identifier(MOD_ID, "main"),
             FabricItemGroup
                 .builder()
-                .icon { ItemStack(IndustrialDrill) }
+                .icon { FuelGenerator.ITEM.defaultStack }
                 .displayName(Text.translatable("itemGroup.mousewalk.main"))
                 .entries { _, entries ->
                     entries.add(BuildersWand)
