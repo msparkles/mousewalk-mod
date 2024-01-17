@@ -24,20 +24,21 @@ object BlockHighlighter {
         mutableMapOf<Item, Pair<Int, (PlayerEntity, BlockPos, BlockState, World, Direction) -> List<BlockPos>>>()
 
     fun register() {
-        ServerTickEvents.END_SERVER_TICK.register { server ->
+        ServerTickEvents.START_SERVER_TICK.register { server ->
             if (server.ticks % 4 == 0) {
                 HIGHLIGHTING_HOLDER.values.forEach { it.destroy() }
                 HIGHLIGHTING_HOLDER.clear()
 
                 server.playerManager.playerList
-                    .firstNotNullOfOrNull { player ->
+                    .mapNotNull { player ->
                         player.handItems
                             .firstNotNullOfOrNull {
                                 REGISTERED_HIGHLIGHTER[it.item]
                             }?.let {
                                 player to it
                             }
-                    }?.let { (player, v) ->
+                    }
+                    .forEach { (player, v) ->
                         val (color, highlighter) = v
                         val cast =
                             player.raycast(PlayerEntity.getReachDistance(player.isCreative).toDouble(), 0F, false)

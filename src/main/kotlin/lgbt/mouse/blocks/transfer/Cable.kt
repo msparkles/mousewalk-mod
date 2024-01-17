@@ -16,6 +16,7 @@ import net.minecraft.item.DyeItem
 import net.minecraft.item.Items
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.DyeColor
 import net.minecraft.util.Hand
@@ -81,7 +82,7 @@ abstract class Cable<T : Cable<T>>(
     abstract val colorless: Lazy<T>
     abstract val allColors: Lazy<Map<DyeColor?, Pair<T, String>>>
 
-    open fun isSameBlock(other: Block): Boolean {
+    open fun isSameClass(other: Block): Boolean {
         return other is Cable<*>
     }
 
@@ -127,15 +128,15 @@ abstract class Cable<T : Cable<T>>(
             return true
         }
 
-        if (this.isSameBlock(otherBlock)) {
-            return (this == this.colorless.value || otherBlock == this.colorless.value)
+        if (this.isSameClass(otherBlock)) {
+            return this == this.colorless.value || otherBlock == this.colorless.value
         }
 
         return otherBlock is CableConnectable
     }
 
     private fun getConnected(pos: BlockPos, world: World) = Direction.entries.mapNotNull {
-        val otherState = world.getBlockState(pos.add(it.vector))
+        val otherState = world.getBlockState(pos.offset(it))
 
         if (canConnectCable(otherState.block)) {
             it
@@ -219,6 +220,24 @@ abstract class Cable<T : Cable<T>>(
         hand: Hand,
         hit: BlockHitResult,
     ): ActionResult {
+        if (world.isClient) return ActionResult.PASS
+
+        if (hand == Hand.MAIN_HAND) {
+            (world.getBlockEntity(pos) as? CableEntity)?.let {
+                player.sendMessage(
+                    Text.translatable("tooltip.mousewalk.cable_energy", it.sidedEnergy.amount),
+                    true
+                )
+
+                player.sendMessage(Text.translatable("tooltip.mousewalk.cable_input_sides"))
+                it.sidedEnergy.insertSides.forEach { dir ->
+                    player.sendMessage(
+                        Text.of("$dir - ").copy().append(world.getBlockState(pos.offset(dir)).block.name)
+                    )
+                }
+            }
+        }
+
         (player.getStackInHand(hand).item as? DyeItem)?.let {
             this.allColors.value[it.color]?.let { (block) ->
                 world.setBlockState(pos, block.getStateWithProperties(state))
@@ -233,7 +252,8 @@ abstract class Cable<T : Cable<T>>(
             }
         }
 
-        return super.onUse(state, world, pos, player, hand, hit)
+
+        return ActionResult.PASS
     }
 
     override fun onPolymerBlockSend(blockState: BlockState, pos: BlockPos.Mutable, player: ServerPlayerEntity) {

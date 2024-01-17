@@ -10,14 +10,13 @@ import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 import team.reborn.energy.api.EnergyStorage
 import team.reborn.energy.api.EnergyStorageUtil
-import team.reborn.energy.api.base.SimpleSidedEnergyContainer
 
 abstract class CableEntity(
     type: BlockEntityType<*>,
     pos: BlockPos,
     state: BlockState,
 ) : BlockEntity(type, pos, state) {
-    abstract val sidedEnergy: SimpleSidedEnergyContainer
+    abstract val sidedEnergy: CableSidedEnergyContainer
 
     override fun writeNbt(nbt: NbtCompound) {
         nbt.putLong(ENERGY_KEY, sidedEnergy.amount)
@@ -30,26 +29,45 @@ abstract class CableEntity(
     }
 
     open fun tick(world: World, pos: BlockPos, state: BlockState) {
-        this.trySendEnergy(world, pos, this.sidedEnergy)
+        trySendEnergy(world, pos, this.sidedEnergy)
     }
 
-    fun trySendEnergy(world: World, pos: BlockPos, sidedEnergy: SimpleSidedEnergyContainer) {
-        Direction.entries.mapNotNull { dir ->
-            EnergyStorage.SIDED.find(world, pos.add(dir.vector), dir.opposite)?.let {
-                it to dir
-            }
-        }.forEach { (target, dir) ->
-            if (target.supportsInsertion()) {
-                val storage = sidedEnergy.getSideStorage(dir)
-                if (storage.supportsExtraction()) {
-                    EnergyStorageUtil.move(
-                        storage,
-                        target,
-                        Long.MAX_VALUE,
-                        null
-                    )
+    companion object {
+        fun sendTo(
+            world: World,
+            pos: BlockPos,
+            direction: Direction,
+            storage: EnergyStorage,
+            target: EnergyStorage,
+            amount: Long,
+        ) {
+            if (storage.supportsExtraction()) {
+                val result = EnergyStorageUtil.move(
+                    storage,
+                    target,
+                    amount,
+                    null
+                )
+                if (result > 0) {
+                    (world.getBlockEntity(pos.offset(direction)) as? CableEntity)?.let {
+                        it.sidedEnergy.insertSides += direction.opposite
+                    }
                 }
             }
+        }
+
+        fun trySendEnergy(world: World, pos: BlockPos, sidedEnergy: CableSidedEnergyContainer) {
+            Direction.entries
+                .filterNot { sidedEnergy.insertSides.contains(it) }
+                .mapNotNull { dir ->
+                    EnergyStorage.SIDED.find(world, pos.offset(dir), dir.opposite)?.let {
+                        it to dir
+                    }
+                }
+                .filter { (target) -> target.supportsInsertion() }
+                .forEach { (target, dir) ->
+                    sendTo(world, pos, dir, sidedEnergy.getSideStorage(dir), target, sidedEnergy.amount)
+                }
         }
     }
 }

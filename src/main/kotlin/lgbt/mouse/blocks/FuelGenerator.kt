@@ -15,10 +15,13 @@ import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.screen.slot.Slot
 import net.minecraft.sound.BlockSoundGroup
+import net.minecraft.util.ItemScatterer
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import team.reborn.energy.api.base.SimpleEnergyStorage
@@ -54,13 +57,13 @@ object FuelGenerator : SimplePolymerBlock(
             private const val FUEL_SLOT_KEY = "fuel_slot"
         }
 
-        var fuelSlot: ItemStack? = null
+        var fuelSlot = Slot(SimpleInventory(1), 0, 0, 0)
 
         val fuelStorage = object : SingleStackStorage() {
-            override fun getStack() = fuelSlot ?: ItemStack.EMPTY
+            override fun getStack() = fuelSlot.stack
 
             override fun setStack(stack: ItemStack?) {
-                fuelSlot = stack
+                fuelSlot.stack = stack ?: ItemStack.EMPTY
             }
 
             override fun canExtract(itemVariant: ItemVariant?): Boolean {
@@ -83,29 +86,22 @@ object FuelGenerator : SimplePolymerBlock(
         override fun readNbt(nbt: NbtCompound) {
             this.fuelTime = nbt.getInt(FUEL_TIME_KEY)
             if (nbt.contains(FUEL_SLOT_KEY)) {
-                this.fuelSlot = ItemStack.fromNbt(nbt.getCompound(FUEL_SLOT_KEY))
+                this.fuelSlot.stack = ItemStack.fromNbt(nbt.getCompound(FUEL_SLOT_KEY))
             }
             super.readNbt(nbt)
         }
 
         override fun writeNbt(nbt: NbtCompound) {
             nbt.putInt(FUEL_TIME_KEY, this.fuelTime)
-            this.fuelSlot?.let {
-                nbt.put(FUEL_SLOT_KEY, it.writeNbt(NbtCompound()))
-            }
+            nbt.put(FUEL_SLOT_KEY, this.fuelSlot.stack.writeNbt(NbtCompound()))
             super.writeNbt(nbt)
         }
 
         override fun tick(world: World, pos: BlockPos, state: BlockState) {
             if (fuelTime <= 0) {
-                fuelSlot?.let {
-                    if (!it.isEmpty) {
-                        fuelTime += FuelRegistry.INSTANCE[it.item]
-                        it.decrement(1)
-                    }
-                    if (it.isEmpty) {
-                        fuelSlot = null
-                    }
+                if (!fuelSlot.stack.isEmpty) {
+                    fuelTime += FuelRegistry.INSTANCE[fuelSlot.stack.item]
+                    fuelSlot.stack.decrement(1)
                 }
             }
             if (fuelTime > 0 && energyStorage.amount < energyStorage.capacity) {
@@ -117,6 +113,22 @@ object FuelGenerator : SimplePolymerBlock(
     }
 
     val ITEM = object : PolymerBlockItem(FuelGenerator, FabricItemSettings(), Items.FURNACE) {
+    }
+
+    override fun onStateReplaced(
+        state: BlockState,
+        world: World,
+        pos: BlockPos,
+        newState: BlockState,
+        moved: Boolean,
+    ) {
+        if (state.block != newState.block) {
+            (world.getBlockEntity(pos) as? FuelGeneratorEntity)?.let {
+                ItemScatterer.spawn(world, pos, it.fuelSlot.inventory)
+            }
+        }
+
+        super.onStateReplaced(state, world, pos, newState, moved)
     }
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState) = FuelGeneratorEntity(pos, state)

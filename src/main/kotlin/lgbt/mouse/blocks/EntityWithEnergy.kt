@@ -1,5 +1,6 @@
 package lgbt.mouse.blocks
 
+import lgbt.mouse.blocks.transfer.CableEntity
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
@@ -8,7 +9,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 import team.reborn.energy.api.EnergyStorage
-import team.reborn.energy.api.EnergyStorageUtil
 import team.reborn.energy.api.base.SimpleEnergyStorage
 
 abstract class EntityWithEnergy(
@@ -34,18 +34,16 @@ abstract class EntityWithEnergy(
 
     open fun tick(world: World, pos: BlockPos, state: BlockState) {
         if (this.energyStorage.supportsExtraction()) {
-            Direction.entries.mapNotNull {
-                EnergyStorage.SIDED.find(world, pos.add(it.vector), it.opposite)
-            }.forEach { target ->
-                if (target.supportsInsertion()) {
-                    EnergyStorageUtil.move(
-                        this.energyStorage,
-                        target,
-                        this.energyStorage.maxExtract,
-                        null
-                    )
+            Direction.entries
+                .mapNotNull { dir ->
+                    EnergyStorage.SIDED.find(world, pos.offset(dir), dir.opposite)?.let {
+                        it to dir
+                    }
                 }
-            }
+                .filter { (target) -> target.supportsInsertion() }
+                .forEach { (target, dir) ->
+                    CableEntity.sendTo(world, pos, dir, this.energyStorage, target, this.energyStorage.amount)
+                }
         }
     }
 }

@@ -10,8 +10,6 @@ import net.minecraft.item.Items
 import net.minecraft.sound.BlockSoundGroup
 import net.minecraft.util.DyeColor
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
-import team.reborn.energy.api.base.SimpleSidedEnergyContainer
 
 
 class CopperCable(
@@ -27,28 +25,10 @@ class CopperCable(
         class CopperCableEntity(pos: BlockPos, state: BlockState) : CableEntity(
             Mousewalk.COPPER_CABLE_ENTITY_TYPE, pos, state
         ) {
-            override val sidedEnergy = object : SimpleSidedEnergyContainer() {
+            override val sidedEnergy = object : CableSidedEnergyContainer(pos, state, this, 3000L, 300L) {
                 override fun onFinalCommit() {
                     markDirty()
-                }
-
-                override fun getCapacity() = 2000L
-
-                override fun getMaxInsert(side: Direction?): Long {
-                    return side?.let {
-                        if ((state.block as Cable<*>).canConnectCable(
-                                this@CopperCableEntity.world!!.getBlockState(pos.add(it.vector)).block
-                            )
-                        ) {
-                            300L
-                        } else {
-                            0L
-                        }
-                    } ?: 300L
-                }
-
-                override fun getMaxExtract(side: Direction?): Long {
-                    return 300L
+                    super.onFinalCommit()
                 }
             }
         }
@@ -67,7 +47,7 @@ class CopperCable(
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState) = CopperCableEntity(pos, state)
 
-    override fun isSameBlock(other: Block): Boolean {
+    override fun isSameClass(other: Block): Boolean {
         return other is CopperCable
     }
 }

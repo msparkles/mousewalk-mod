@@ -48,7 +48,7 @@ object BuildersWand : SimplePolymerItem(FabricItemSettings().maxCount(1).rarity(
                 .forEach {
                     if (
                         world.testBlockState(it) { other -> other == block }
-                        && world.testBlockState(it.add(side.vector)) { other -> other.isAir }
+                        && world.testBlockState(it.offset(side)) { other -> other.isAir }
                     ) {
                         set += it
                     }
@@ -86,7 +86,7 @@ object BuildersWand : SimplePolymerItem(FabricItemSettings().maxCount(1).rarity(
             } else {
                 canBePlaced
             }.forEach {
-                context.world.setBlockState(it.add(context.side.vector), block)
+                context.world.setBlockState(it.offset(context.side), block)
             }
 
             player.playSound(

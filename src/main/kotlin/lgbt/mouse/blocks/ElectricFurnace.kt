@@ -31,6 +31,7 @@ import net.minecraft.sound.BlockSoundGroup
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
+import net.minecraft.util.ItemScatterer
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
@@ -91,8 +92,8 @@ object ElectricFurnace : SimplePolymerBlock(
         var cookTime: Short = 0
             private set
 
-        private var inputSlot = Slot(SimpleInventory(1), 0, 0, 0)
-        private var outputSlot = Slot(SimpleInventory(1), 0, 0, 0)
+        val inputSlot = Slot(SimpleInventory(1), 0, 0, 0)
+        val outputSlot = Slot(SimpleInventory(1), 0, 0, 0)
 
         val storage = CombinedStorage(listOf(
             object : SingleStackStorage() {
@@ -137,12 +138,8 @@ object ElectricFurnace : SimplePolymerBlock(
         override fun writeNbt(nbt: NbtCompound) {
             nbt.putShort(COOK_TIME_TOTAL_KEY, TICKS_NEEDED)
             nbt.putShort(COOK_TIME_KEY, this.cookTime)
-            this.inputSlot.stack.let {
-                nbt.put(INPUT_SLOT_KEY, it.writeNbt(NbtCompound()))
-            }
-            this.outputSlot.stack.let {
-                nbt.put(OUTPUT_SLOT_KEY, it.writeNbt(NbtCompound()))
-            }
+            nbt.put(INPUT_SLOT_KEY, this.inputSlot.stack.writeNbt(NbtCompound()))
+            nbt.put(OUTPUT_SLOT_KEY, this.outputSlot.stack.writeNbt(NbtCompound()))
             super.writeNbt(nbt)
         }
 
@@ -190,6 +187,8 @@ object ElectricFurnace : SimplePolymerBlock(
         hand: Hand?,
         hit: BlockHitResult?,
     ): ActionResult {
+        if (world.isClient) return ActionResult.PASS
+
         (player as? ServerPlayerEntity)?.let {
             val entity = (world.getBlockEntity(pos) as? ElectricFurnaceEntity) ?: return ActionResult.FAIL
             val gui = ElectricFurnaceEntity.Companion.FurnaceGui(state, entity, player)
@@ -197,6 +196,23 @@ object ElectricFurnace : SimplePolymerBlock(
             gui.open()
         }
         return ActionResult.SUCCESS
+    }
+
+    override fun onStateReplaced(
+        state: BlockState,
+        world: World,
+        pos: BlockPos,
+        newState: BlockState,
+        moved: Boolean,
+    ) {
+        if (state.block != newState.block) {
+            (world.getBlockEntity(pos) as? ElectricFurnaceEntity)?.let {
+                ItemScatterer.spawn(world, pos, it.inputSlot.inventory)
+                ItemScatterer.spawn(world, pos, it.outputSlot.inventory)
+            }
+        }
+
+        super.onStateReplaced(state, world, pos, newState, moved)
     }
 
     override fun createBlockEntity(pos: BlockPos, state: BlockState) = ElectricFurnaceEntity(pos, state)
