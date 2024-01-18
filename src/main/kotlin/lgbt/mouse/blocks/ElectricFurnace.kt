@@ -49,7 +49,7 @@ object ElectricFurnace : SimplePolymerBlock(
     Blocks.FURNACE
 ), BlockEntityProvider, CableConnectable {
     init {
-        this.defaultState = defaultState.with(Properties.HORIZONTAL_FACING, Direction.NORTH);
+        this.defaultState = defaultState.with(Properties.HORIZONTAL_FACING, Direction.NORTH)
     }
 
     const val ELECTRIC_FURNACE_NAME = "electric_furnace"

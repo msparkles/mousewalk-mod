@@ -36,7 +36,7 @@ object FuelGenerator : SimplePolymerBlock(
     Blocks.FURNACE
 ), BlockEntityProvider, CableConnectable {
     init {
-        this.defaultState = defaultState.with(Properties.HORIZONTAL_FACING, Direction.NORTH);
+        this.defaultState = defaultState.with(Properties.HORIZONTAL_FACING, Direction.NORTH)
     }
 
     const val FUEL_GENERATOR_NAME = "fuel_generator"
